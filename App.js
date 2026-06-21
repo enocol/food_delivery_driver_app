@@ -11,68 +11,81 @@ import HomeScreen from "./screens/HomeScreen";
 import EarningsScreen from "./screens/EarningsScreen";
 import InboxScreen from "./screens/InboxScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import DiscoverScreen from "./screens/DiscoverScreen";
 import AuthScreen from "./screens/AuthScreen";
+import { OnlineProvider } from "./context/OnlineContext";
 
 const Tab = createBottomTabNavigator();
 
 function MainNavigator() {
   return (
-    <NavigationContainer>
-      <StatusBar style="dark" />
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: {
-            backgroundColor: "#ffffff",
-            borderTopColor: "#e0e0e0",
-            borderTopWidth: 1,
-          },
-          tabBarActiveTintColor: "#1a1a1a",
-          tabBarInactiveTintColor: "#9e9e9e",
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: "600",
-          },
-        }}
-      >
-        <Tab.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="home" size={size} color={color} />
-            ),
+    <OnlineProvider>
+      <NavigationContainer>
+        <StatusBar style="light" />
+        <Tab.Navigator
+          screenOptions={{
+            headerShown: false,
+            tabBarStyle: {
+              backgroundColor: "#1a1a1a",
+              borderTopColor: "#2e2e2e",
+              borderTopWidth: 1,
+            },
+            tabBarActiveTintColor: "#ffffff",
+            tabBarInactiveTintColor: "#666666",
+            tabBarLabelStyle: {
+              fontSize: 11,
+              fontWeight: "600",
+            },
           }}
-        />
-        <Tab.Screen
-          name="Earnings"
-          component={EarningsScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="cash-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Inbox"
-          component={InboxScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="chatbubble-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="person-outline" size={size} color={color} />
-            ),
-          }}
-        />
-      </Tab.Navigator>
-    </NavigationContainer>
+        >
+          <Tab.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="home" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Discover"
+            component={DiscoverScreen}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="compass-outline" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Earnings"
+            component={EarningsScreen}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="cash-outline" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Inbox"
+            component={InboxScreen}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="chatbubble-outline" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Menu"
+            component={ProfileScreen}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <Ionicons name="menu-outline" size={size} color={color} />
+              ),
+            }}
+          />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </OnlineProvider>
   );
 }
 
