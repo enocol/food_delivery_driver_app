@@ -12,38 +12,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Location from "expo-location";
-import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import { useOnlineStatus } from "../context/OnlineContext";
+import { playBreakingGlass } from "../utils/audio";
+import { INITIAL_REGION } from "../constants/map";
+import DeliveryRequestModal from "../components/DeliveryRequestModal";
 import {
   getSocket,
   addSocketListener,
   removeSocketListener,
 } from "../config/socket";
-
-const GLASS_SOUND = require("../assets/sounds/breaking-glass.mp3");
-
-async function playBreakingGlass() {
-  try {
-    await setAudioModeAsync({
-      playsInSilentMode: true,
-      interruptionMode: "mixWithOthers",
-    });
-    const player = createAudioPlayer(GLASS_SOUND);
-    player.play();
-    player.addListener("playbackStatusUpdate", (status) => {
-      if (status.didJustFinish) player.remove();
-    });
-  } catch {
-    // sound failure never blocks going online
-  }
-}
-
-const INITIAL_REGION = {
-  latitude: 37.7749,
-  longitude: -122.4194,
-  latitudeDelta: 0.05,
-  longitudeDelta: 0.05,
-};
 
 export default function OnlineMapScreen() {
   const navigation = useNavigation();
@@ -230,7 +207,7 @@ export default function OnlineMapScreen() {
           onPress={() => setSheetVisible(true)}
           activeOpacity={0.9}
         >
-          <Text style={styles.bottomStatusText}>You'reeeee {statusLabel}</Text>
+          <Text style={styles.bottomStatusText}>You're {statusLabel}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.bottomIconBtn} activeOpacity={0.7}>
@@ -239,56 +216,12 @@ export default function OnlineMapScreen() {
       </TouchableOpacity>
 
       {/* ── Delivery request sheet ───────────────────────── */}
-      <Modal
-        visible={!!deliveryRequest}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setDeliveryRequest(null)}
-      >
-        <View style={styles.sheetOverlay}>
-          <TouchableOpacity
-            style={styles.sheetBackdrop}
-            activeOpacity={1}
-            onPress={() => setDeliveryRequest(null)}
-          />
-          <View style={[styles.sheetPanel, styles.deliverySheetPanel]}>
-            <Text style={styles.deliverySheetTitle}>New Delivery Request</Text>
-            {[
-              ["Order ID", deliveryRequest?.orderId],
-              ["Restaurant", deliveryRequest?.restaurantName],
-              ["Pickup", deliveryRequest?.pickupAddress],
-              ["Delivery", deliveryRequest?.deliveryAddress],
-            ].map(([label, value]) => (
-              <View key={label} style={styles.deliveryRow}>
-                <Text style={styles.deliveryLabel}>{label}</Text>
-                <Text style={styles.deliveryValue}>{value}</Text>
-              </View>
-            ))}
-            <View style={styles.deliveryRow}>
-              <Text style={styles.deliveryLabel}>Fee</Text>
-              <Text style={[styles.deliveryValue, styles.deliveryFee]}>
-                £{deliveryRequest?.fee?.toFixed(2)}
-              </Text>
-            </View>
-            <View style={styles.deliveryActions}>
-              <TouchableOpacity
-                style={[styles.deliveryBtn, styles.deliveryBtnDecline]}
-                onPress={() => setDeliveryRequest(null)}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.deliveryBtnText}>Decline</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.deliveryBtn, styles.deliveryBtnAccept]}
-                onPress={() => setDeliveryRequest(null)}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.deliveryBtnText}>Accept</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <DeliveryRequestModal
+        request={deliveryRequest}
+        onAccept={() => setDeliveryRequest(null)}
+        onDecline={() => setDeliveryRequest(null)}
+        onClose={() => setDeliveryRequest(null)}
+      />
 
       {/* ── Go Offline sheet ────────────────────────────── */}
       <Modal
@@ -486,67 +419,5 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "center",
     lineHeight: 24,
-  },
-
-  // ── Delivery sheet ───────────────────────────────────
-  deliverySheetPanel: {
-    height: "auto",
-    paddingHorizontal: 24,
-    paddingTop: 28,
-    paddingBottom: 36,
-  },
-  deliverySheetTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#1a1a1a",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  deliveryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 14,
-    gap: 12,
-  },
-  deliveryLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666666",
-    width: 100,
-  },
-  deliveryValue: {
-    flex: 1,
-    fontSize: 14,
-    color: "#1a1a1a",
-    textAlign: "right",
-  },
-  deliveryFee: {
-    color: "#1a73e8",
-    fontWeight: "700",
-    fontSize: 16,
-  },
-  deliveryActions: {
-    flexDirection: "row",
-    gap: 14,
-    marginTop: 24,
-  },
-  deliveryBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  deliveryBtnDecline: {
-    backgroundColor: "#e53935",
-  },
-  deliveryBtnAccept: {
-    backgroundColor: "#1a73e8",
-  },
-  deliveryBtnText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "700",
   },
 });
