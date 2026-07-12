@@ -16,11 +16,13 @@ import {
   Animated,
   ActivityIndicator,
   Alert,
+  Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MapView from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
+import { WebView } from "react-native-webview";
 import { useNavigation } from "@react-navigation/native";
 import { useOnlineStatus } from "../context/OnlineContext";
 import { playBreakingGlass } from "../utils/audio";
@@ -44,6 +46,46 @@ const TAB_BAR_STYLE = {
   borderTopWidth: 1,
 };
 
+// Added: thresholds for movement-triggered and heartbeat location updates.
+const MOVE_THRESHOLD_METERS = 30;
+const HEARTBEAT_MS = 10000;
+const MIN_EMIT_GAP_MS = 2000;
+const ARRIVAL_THRESHOLD_METERS = 35;
+
+// Added: calculate distance between two coordinates in meters.
+function haversineMeters(a, b) {
+  const toRad = (d) => (d * Math.PI) / 180;
+  const R = 6371000;
+  const dLat = toRad(b.latitude - a.latitude);
+  const dLon = toRad(b.longitude - a.longitude);
+  const lat1 = toRad(a.latitude);
+  const lat2 = toRad(b.latitude);
+
+  const x =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+// Added: normalize coordinate objects from payloads with {lat,lng} or {latitude,longitude}.
+function extractCoords(value) {
+  if (!value || typeof value !== "object") return null;
+  const latitude =
+    typeof value.latitude === "number"
+      ? value.latitude
+      : typeof value.lat === "number"
+        ? value.lat
+        : null;
+  const longitude =
+    typeof value.longitude === "number"
+      ? value.longitude
+      : typeof value.lng === "number"
+        ? value.lng
+        : null;
+  if (latitude == null || longitude == null) return null;
+  return { latitude, longitude };
+}
+
 // ── Component ──────────────────────────────────────────────
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -58,6 +100,18 @@ export default function HomeScreen() {
   const [isGoingOnline, setIsGoingOnline] = useState(false);
   const [isGoingOffline, setIsGoingOffline] = useState(false);
   const [deliveryRequest, setDeliveryRequest] = useState(null);
+  // Added: active accepted delivery used to gate location tracking.
+  const [activeDelivery, setActiveDelivery] = useState(null);
+  // Added: in-app navigation modal state and current route URL.
+  const [isNavVisible, setIsNavVisible] = useState(false);
+  const [navUrl, setNavUrl] = useState(null);
+
+  // Added: refs for live-tracking subscriptions and throttling state.
+  const locationSubRef = useRef(null);
+  const heartbeatTimerRef = useRef(null);
+  const lastSentRef = useRef(null);
+  const lastSentAtRef = useRef(0);
+  const arrivalFlagsRef = useRef({ pickup: false, delivery: false });
 
   const {
     dashAnim,
@@ -84,6 +138,160 @@ export default function HomeScreen() {
   // Indeterminate status line (online only) — slides left↔right
   const lineAnim = useRef(new Animated.Value(0)).current;
   const [lineTrackW, setLineTrackW] = useState(0);
+
+  // Added: destination coordinates for pickup/dropoff arrival checks.
+  const pickupCoords = extractCoords(activeDelivery?.pickupAddress);
+  const deliveryCoords = extractCoords(activeDelivery?.deliveryAddress);
+
+  // Added: emit location to backend over socket using the update_location event.
+  function emitLocationUpdate(coords, meta = {}) {
+    if (!coords) return;
+    const socket = getSocket();
+    socket?.emit("update_location", {
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      orderId: activeDelivery?.orderId ?? null,
+      reason: meta.reason ?? "movement",
+      accuracy: meta.accuracy ?? null,
+      speed: meta.speed ?? null,
+      heading: meta.heading ?? null,
+      timestamp: Date.now(),
+    });
+  }
+
+  // Added: open turn-by-turn navigation to pickup once a request is accepted.
+  async function navigateToPickup(request) {
+    const pickupCoordsValue = extractCoords(request?.pickupAddress);
+    const pickupAddressText =
+      typeof request?.pickupAddress === "string"
+        ? request.pickupAddress
+        : typeof request?.pickupAddress?.address === "string"
+          ? request.pickupAddress.address
+          : null;
+
+    let destination = pickupCoordsValue;
+
+    if (!destination && pickupAddressText) {
+      try {
+        const geocoded = await Location.geocodeAsync(pickupAddressText);
+        if (geocoded?.length) {
+          destination = {
+            latitude: geocoded[0].latitude,
+            longitude: geocoded[0].longitude,
+          };
+        }
+      } catch {
+        // Keep destination null and show a user-friendly message below.
+      }
+    }
+
+    if (!destination) {
+      Alert.alert(
+        "Navigation unavailable",
+        "Couldn't resolve the pickup location for navigation.",
+      );
+      return;
+    }
+
+    mapRef.current?.animateToRegion(
+      {
+        latitude: destination.latitude,
+        longitude: destination.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      },
+      700,
+    );
+
+    try {
+      let originParam = "";
+      try {
+        const current = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        originParam = `&origin=${encodeURIComponent(
+          `${current.coords.latitude},${current.coords.longitude}`,
+        )}`;
+      } catch {
+        // If current location isn't available, open route with destination only.
+      }
+
+      const destinationParam = encodeURIComponent(
+        `${destination.latitude},${destination.longitude}`,
+      );
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${destinationParam}${originParam}&travelmode=driving`;
+      setNavUrl(url);
+      setIsNavVisible(true);
+    } catch {
+      Alert.alert(
+        "Navigation unavailable",
+        "Couldn't load in-app navigation right now.",
+      );
+    }
+  }
+
+  // Added: emit one-time final pings when reaching pickup or delivery proximity.
+  function maybeEmitArrivalUpdates(coords, meta = {}) {
+    if (!coords) return;
+
+    if (pickupCoords && !arrivalFlagsRef.current.pickup) {
+      const toPickup = haversineMeters(coords, pickupCoords);
+      if (toPickup <= ARRIVAL_THRESHOLD_METERS) {
+        emitLocationUpdate(coords, {
+          ...meta,
+          reason: "pickup_arrived",
+        });
+        arrivalFlagsRef.current.pickup = true;
+      }
+    }
+
+    if (deliveryCoords && !arrivalFlagsRef.current.delivery) {
+      const toDelivery = haversineMeters(coords, deliveryCoords);
+      if (toDelivery <= ARRIVAL_THRESHOLD_METERS) {
+        emitLocationUpdate(coords, {
+          ...meta,
+          reason: "delivery_arrived",
+        });
+        arrivalFlagsRef.current.delivery = true;
+      }
+    }
+  }
+
+  // Added: movement/heartbeat throttle and filtering before emitting updates.
+  function maybeEmitMovementUpdate(location, reason = "movement") {
+    const coords = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    };
+    const now = Date.now();
+    const last = lastSentRef.current;
+    const moved = last
+      ? haversineMeters(last, coords)
+      : Number.POSITIVE_INFINITY;
+    const forceEmit =
+      reason === "heartbeat" ||
+      reason === "reconnect" ||
+      reason === "tracking_start" ||
+      reason === "going_offline";
+
+    if (!forceEmit && now - lastSentAtRef.current < MIN_EMIT_GAP_MS) return;
+    if (!forceEmit && reason === "movement" && moved < MOVE_THRESHOLD_METERS)
+      return;
+
+    emitLocationUpdate(coords, {
+      reason,
+      accuracy: location.coords.accuracy ?? null,
+      speed: location.coords.speed ?? null,
+      heading: location.coords.heading ?? null,
+    });
+    lastSentRef.current = coords;
+    lastSentAtRef.current = now;
+    maybeEmitArrivalUpdates(coords, {
+      accuracy: location.coords.accuracy ?? null,
+      speed: location.coords.speed ?? null,
+      heading: location.coords.heading ?? null,
+    });
+  }
 
   // ── Tab bar sync ──────────────────────────────────────
   useEffect(() => {
@@ -120,6 +328,91 @@ export default function HomeScreen() {
     );
     loop.start();
     return () => loop.stop();
+  }, [isOnline]);
+
+  // Start/stop live location updates while the driver is online.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function startTracking() {
+      if (!isOnline) return;
+
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        return;
+      }
+
+      const initial = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      if (cancelled) return;
+      maybeEmitMovementUpdate(initial, "tracking_start");
+
+      const sub = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.Balanced,
+          timeInterval: 5000,
+          distanceInterval: 20,
+        },
+        (location) => {
+          if (!cancelled) maybeEmitMovementUpdate(location, "movement");
+        },
+      );
+
+      if (cancelled) {
+        sub.remove();
+        return;
+      }
+      locationSubRef.current = sub;
+
+      heartbeatTimerRef.current = setInterval(async () => {
+        if (!isOnline) return;
+        try {
+          const latest = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+          if (!cancelled) maybeEmitMovementUpdate(latest, "heartbeat");
+        } catch {
+          // Ignore transient location failures.
+        }
+      }, HEARTBEAT_MS);
+    }
+
+    startTracking();
+
+    return () => {
+      cancelled = true;
+      if (heartbeatTimerRef.current) {
+        clearInterval(heartbeatTimerRef.current);
+        heartbeatTimerRef.current = null;
+      }
+      if (locationSubRef.current) {
+        locationSubRef.current.remove();
+        locationSubRef.current = null;
+      }
+      lastSentRef.current = null;
+      lastSentAtRef.current = 0;
+      arrivalFlagsRef.current = { pickup: false, delivery: false };
+    };
+  }, [isOnline]);
+
+  // When socket reconnects, immediately push a fresh location for fast resync.
+  useEffect(() => {
+    if (!isOnline) return;
+
+    const onConnect = async () => {
+      try {
+        const latest = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        maybeEmitMovementUpdate(latest, "reconnect");
+      } catch {
+        // Ignore if location is unavailable during reconnect.
+      }
+    };
+
+    addSocketListener("connect", onConnect);
+    return () => removeSocketListener("connect", onConnect);
   }, [isOnline]);
 
   // ── Socket: delivery requests ─────────────────────────
@@ -242,6 +535,26 @@ export default function HomeScreen() {
     collapseSheet();
     setIsGoingOffline(true);
 
+    // Added: send a final location update before transitioning offline.
+    if (activeDelivery) {
+      Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+        .then((loc) => {
+          emitLocationUpdate(
+            {
+              latitude: loc.coords.latitude,
+              longitude: loc.coords.longitude,
+            },
+            {
+              reason: "going_offline",
+              accuracy: loc.coords.accuracy ?? null,
+              speed: loc.coords.speed ?? null,
+              heading: loc.coords.heading ?? null,
+            },
+          );
+        })
+        .catch(() => {});
+    }
+
     requestStatusChange({
       socket: getSocket(),
       emitEvent: "go_offline",
@@ -254,6 +567,7 @@ export default function HomeScreen() {
         }).start(() => {
           setStatusLabel(null);
           setIsOnline(false);
+          setActiveDelivery(null);
           setIsGoingOffline(false);
           setViewMode("dashboard");
           Animated.timing(dashAnim, {
@@ -371,6 +685,31 @@ export default function HomeScreen() {
       )}
 
       {/* ──────────────────────────────────────────────────
+          RESUME NAVIGATION — available while an active delivery exists
+      ──────────────────────────────────────────────── */}
+      {!!activeDelivery && (
+        <View
+          pointerEvents="box-none"
+          style={[
+            styles.resumeNavWrap,
+            {
+              bottom:
+                insets.bottom + (viewMode === "map" ? actionBarH + 18 : 18),
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.resumeNavBtn}
+            onPress={() => navigateToPickup(activeDelivery)}
+            activeOpacity={0.9}
+          >
+            <Ionicons name="navigate" size={18} color="#ffffff" />
+            <Text style={styles.resumeNavText}>Resume Nav</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* ──────────────────────────────────────────────────
           MAP MODE — sliding sheet content
       ──────────────────────────────────────────────── */}
       <SlidingSheet
@@ -424,10 +763,49 @@ export default function HomeScreen() {
       ──────────────────────────────────────────────── */}
       <DeliveryRequestModal
         request={deliveryRequest}
-        onAccept={() => setDeliveryRequest(null)}
+        // Added: promote accepted request to active trip so tracking can start.
+        onAccept={(acceptedRequest) => {
+          setActiveDelivery(acceptedRequest);
+          setDeliveryRequest(null);
+          navigateToPickup(acceptedRequest);
+        }}
         onDecline={() => setDeliveryRequest(null)}
         onClose={() => setDeliveryRequest(null)}
       />
+
+      {/* ──────────────────────────────────────────────────
+          IN-APP NAVIGATION MODAL — route to pickup
+      ──────────────────────────────────────────────── */}
+      <Modal
+        visible={isNavVisible}
+        animationType="slide"
+        onRequestClose={() => setIsNavVisible(false)}
+      >
+        <View style={styles.navModalContainer}>
+          <View style={[styles.navHeader, { paddingTop: insets.top + 10 }]}>
+            <Text style={styles.navTitle}>Pickup Navigation</Text>
+            <TouchableOpacity
+              style={styles.navCloseBtn}
+              onPress={() => setIsNavVisible(false)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.navCloseText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+          {navUrl ? (
+            <WebView
+              source={{ uri: navUrl }}
+              style={styles.navWebView}
+              startInLoadingState
+            />
+          ) : (
+            <View style={styles.navLoadingWrap}>
+              <ActivityIndicator color="#1a73e8" size="large" />
+              <Text style={styles.navLoadingText}>Loading navigation…</Text>
+            </View>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -532,5 +910,78 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "800",
     letterSpacing: 1,
+  },
+
+  // ── Resume navigation button ────────────────────────
+  resumeNavWrap: {
+    position: "absolute",
+    right: 16,
+    zIndex: 20,
+  },
+  resumeNavBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#1a73e8",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 22,
+    elevation: 7,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+  },
+  resumeNavText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+
+  // ── In-app navigation modal ─────────────────────────
+  navModalContainer: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+  },
+  navHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e5e5",
+    backgroundColor: "#ffffff",
+  },
+  navTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#1a1a1a",
+  },
+  navCloseBtn: {
+    backgroundColor: "#f0f0f0",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  navCloseText: {
+    color: "#1a1a1a",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  navWebView: {
+    flex: 1,
+  },
+  navLoadingWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  },
+  navLoadingText: {
+    color: "#444444",
+    fontSize: 14,
+    fontWeight: "500",
   },
 });
