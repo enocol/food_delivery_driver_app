@@ -36,13 +36,20 @@
     "plugins": [
       "expo-audio",
       "expo-asset",
-      "@react-native-firebase/app",
+      [
+        "@react-native-firebase/app",
+        {
+          "ios": {
+            "disableSPM": true
+          }
+        }
+      ],
       "@react-native-firebase/auth",
       [
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "dynamic"
+            "useFrameworks": "static"
           }
         }
       ],
