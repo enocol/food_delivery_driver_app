@@ -228,7 +228,6 @@ const styles = StyleSheet.create({
     color: "#1a1a1a",
     marginBottom: 20,
     textAlign: "center",
-    backgroundColor: "#04f024df",
   },
   row: {
     flexDirection: "row",

@@ -1,0 +1,88 @@
+{
+  "project_info": {
+    "project_number": "257059354170",
+    "project_id": "mbole-eats",
+    "storage_bucket": "mbole-eats.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257059354170:android:8a1bff21e9375bab41a703",
+        "android_client_info": {
+          "package_name": "com.mbolotechnologies.delivery_driver_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "257059354170-alc3f5282kaijv2cquhf2j8b5obpiqm2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpTyINkmcjqjnJfPrNqlokqJqbYFn4TbY"
+        },
+        {
+          "current_key": "AIzaSyCLzHN_7v3PR8w4xxs5FRP25nnciykUFDI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "257059354170-alc3f5282kaijv2cquhf2j8b5obpiqm2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "257059354170-55rrb08lea2pr34fr3v3urc30a9fed51.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mbolotechnologies.mboloeats"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257059354170:android:213d44c6545ad42f41a703",
+        "android_client_info": {
+          "package_name": "com.mbolotechnologies.mboloeats"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "257059354170-alc3f5282kaijv2cquhf2j8b5obpiqm2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpTyINkmcjqjnJfPrNqlokqJqbYFn4TbY"
+        },
+        {
+          "current_key": "AIzaSyCLzHN_7v3PR8w4xxs5FRP25nnciykUFDI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "257059354170-alc3f5282kaijv2cquhf2j8b5obpiqm2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "257059354170-55rrb08lea2pr34fr3v3urc30a9fed51.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mbolotechnologies.mboloeats"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

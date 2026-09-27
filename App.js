@@ -4,7 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "@react-native-firebase/auth";
 import { auth } from "./config/firebase";
 import { connectSocket, disconnectSocket } from "./config/socket";
 import HomeScreen from "./screens/HomeScreen";

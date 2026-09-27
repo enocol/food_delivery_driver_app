@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -11,18 +11,16 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
-import { PhoneAuthProvider, signInWithCredential } from "firebase/auth";
+import { signInWithPhoneNumber } from "@react-native-firebase/auth";
 import * as Location from "expo-location";
-import { app, auth } from "../config/firebase";
-// import { API_URL } from "@env";
+import { auth } from "../config/firebase";
+import { API_URL } from "@env";
 
 export default function AuthScreen() {
-  const recaptchaVerifier = useRef(null);
   // Step: "phone" | "otp"
   const [step, setStep] = useState("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [verificationId, setVerificationId] = useState(null);
+  const [confirm, setConfirm] = useState(null);
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
@@ -40,26 +38,14 @@ export default function AuthScreen() {
     }
     try {
       setLoading(true);
-      setStatusMsg("A security check will appear — please complete it…");
-      const provider = new PhoneAuthProvider(auth);
-
-      const timeout = new Promise((_, reject) =>
-        setTimeout(
-          () =>
-            reject(new Error("Security check timed out. Please try again.")),
-          45000,
-        ),
-      );
-
-      const id = await Promise.race([
-        provider.verifyPhoneNumber(fullNumber, recaptchaVerifier.current),
-        timeout,
-      ]);
       setStatusMsg("Sending SMS…");
-      setVerificationId(id);
+      // Native app verification (Play Integrity / silent APNs) runs here; if it
+      // can't complete, Firebase falls back to its own reCAPTCHA flow automatically.
+      const confirmation = await signInWithPhoneNumber(auth, fullNumber);
+      setConfirm(confirmation);
       setStep("otp");
     } catch (e) {
-      setError(e.message || "Failed to send code. Please try again.");
+      setError(e?.message || "Failed to send code. Please try again.");
     } finally {
       setLoading(false);
       setStatusMsg("");
@@ -69,7 +55,6 @@ export default function AuthScreen() {
   // ── Step 2: verify OTP ────────────────────────────────────
   const handleVerifyCode = async () => {
     console.log("Verifying code...");
-    const API_URL = process.env.API_URL;
     setError("");
     if (otp.length < 6) {
       setError("Enter the full 6-digit code.");
@@ -77,8 +62,8 @@ export default function AuthScreen() {
     }
     try {
       setLoading(true);
-      const credential = PhoneAuthProvider.credential(verificationId, otp);
-      const userCredential = await signInWithCredential(auth, credential);
+      await confirm.confirm(otp);
+      const user = auth.currentUser;
 
       // Best-effort location for session sync
       let currentLocation = null;
@@ -99,7 +84,7 @@ export default function AuthScreen() {
 
       // Sync driver session to backend
       try {
-        const idToken = await userCredential.user.getIdToken();
+        const idToken = await user.getIdToken();
         const baseUrl = API_URL.replace(/\/$/, "");
         console.log("Syncing session to backend..., API_URL:", baseUrl);
         // const controller = new AbortController();
@@ -112,7 +97,7 @@ export default function AuthScreen() {
             Authorization: `Bearer ${idToken}`,
           },
           body: JSON.stringify({
-            firebase_uid: userCredential.user.uid,
+            firebase_uid: user.uid,
             phone: fullNumber,
             is_online: false,
             status: "offline",
@@ -135,17 +120,12 @@ export default function AuthScreen() {
   const goBack = () => {
     setStep("phone");
     setOtp("");
-    setVerificationId(null);
+    setConfirm(null);
     setError("");
   };
 
   return (
     <SafeAreaView style={styles.safe}>
-      <FirebaseRecaptchaVerifierModal
-        ref={recaptchaVerifier}
-        firebaseConfig={app.options}
-        attemptInvisibleVerification={false}
-      />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : "height"}

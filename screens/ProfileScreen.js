@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { signOut } from "firebase/auth";
+import { signOut } from "@react-native-firebase/auth";
 import { auth } from "../config/firebase";
 
 export default function ProfileScreen() {
