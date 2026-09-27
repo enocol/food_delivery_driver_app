@@ -33,7 +33,6 @@
   },
   "private": true,
   "devDependencies": {
-    "@expo/config-plugins": "^57.0.9",
     "babel-preset-expo": "~57.0.13",
     "react-native-dotenv": "^3.4.11"
   }
