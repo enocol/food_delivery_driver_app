@@ -6,7 +6,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { onAuthStateChanged } from "@react-native-firebase/auth";
 import { auth } from "./config/firebase";
-import { connectSocket, disconnectSocket } from "./config/socket";
+import {
+  connectSocket,
+  disconnectSocket,
+  isSocketConnected,
+} from "./config/socket";
 import HomeScreen from "./screens/HomeScreen";
 import EarningsScreen from "./screens/EarningsScreen";
 import InboxScreen from "./screens/InboxScreen";
@@ -101,20 +105,22 @@ export default function App() {
     return unsubscribe;
   }, []);
 
-  // Connect socket on login; disconnect on logout
+  // Connect socket on login; disconnect on logout.
+  // The socket fetches a fresh Firebase ID token itself on every
+  // (re)connection via its auth callback, so no token is passed here.
   useEffect(() => {
     if (!user) {
       disconnectSocket();
       return;
     }
-    user.getIdToken().then((token) => connectSocket(token));
+    connectSocket();
   }, [user]);
 
-  // Reconnect when app comes back to foreground
+  // Reconnect when app comes back to foreground if the socket dropped.
   useEffect(() => {
     const sub = AppState.addEventListener("change", (nextState) => {
-      if (nextState === "active" && user) {
-        user.getIdToken(true).then((token) => connectSocket(token));
+      if (nextState === "active" && user && !isSocketConnected()) {
+        connectSocket();
       }
     });
     return () => sub.remove();

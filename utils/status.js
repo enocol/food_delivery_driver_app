@@ -1,3 +1,5 @@
+import { getSocketError } from "../config/socket";
+
 /**
  * requestStatusChange — server-gated online/offline transition.
  *
@@ -26,6 +28,19 @@ export function requestStatusChange({
 }) {
   let settled = false;
   let timeoutId;
+
+  // Fail fast if we aren't connected: socket.io would otherwise buffer the
+  // emit and the caller would wait the full timeout for a reply that can
+  // never arrive. Surface the real reason (e.g. an auth rejection) if known.
+  if (!socket || !socket.connected) {
+    const reason = getSocketError();
+    onFail?.(
+      reason
+        ? `Can't reach the server (${reason}). Please try again.`
+        : "Not connected to the server. Please check your connection and try again.",
+    );
+    return { cancel: () => {} };
+  }
 
   function cleanup() {
     clearTimeout(timeoutId);
