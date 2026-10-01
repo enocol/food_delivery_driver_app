@@ -41,7 +41,7 @@ This is the **driver-facing** mobile app in a food delivery platform. It connect
 | Socket.io Client           | ^4.8.3   | Real-time server communication             |
 | expo-location              | ~57.0.20 | GPS, geocoding, live location tracking     |
 | expo-audio                 | ~57.0.5  | Sound playback                             |
-| react-native-maps          | 1.27.2   | Map display                                |
+| expo-maps                  | ~57.0.3  | Native Apple Maps (iOS) and Google Maps (Android); alpha |
 | react-native-webview       | 13.16.1  | In-app navigation (Google Maps directions) |
 | @expo/vector-icons         | ^15.0.2  | Ionicons UI icons                          |
 | react-native-safe-area-context | ~5.7.0 | Safe-area insets                         |
@@ -192,6 +192,8 @@ React Native Firebase includes custom native code and a **development build is r
    # or with EAS Build
    eas build --profile development --platform android
    ```
+
+5. **Configure Google Maps for Android.** Enable **Maps SDK for Android** in Google Cloud, create an API key restricted to this app's Android package and signing certificate, and set `GOOGLE_MAPS_API_KEY` in the build environment (or in the local `.env` file). `app.config.js` passes this key into the native Expo config. Rebuild after changing the key. Apple Maps on iOS does not require a maps API key.
 
    The config plugins (`@react-native-firebase/app`, `@react-native-firebase/auth`, `expo-build-properties`) are applied automatically during prebuild.
 
