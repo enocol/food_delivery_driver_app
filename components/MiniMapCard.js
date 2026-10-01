@@ -8,21 +8,18 @@
  */
 import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
-import MapView from "react-native-maps";
+import NativeMap from "./NativeMap";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function MiniMapCard({ mapRef, initialRegion, onExpand }) {
   return (
     <View style={styles.miniMapContainer}>
-      <MapView
+      <NativeMap
         ref={mapRef}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
         initialRegion={initialRegion}
         showsUserLocation
-        scrollEnabled={false}
-        zoomEnabled={false}
-        pitchEnabled={false}
-        rotateEnabled={false}
+        interactive={false}
       />
       <View style={styles.miniMapTint} pointerEvents="none" />
       <TouchableOpacity
@@ -48,7 +45,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#333333",
   },
   miniMapTint: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(180, 100, 0, 0.15)",
   },
   mapOverlayBtnLeft: {

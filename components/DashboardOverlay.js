@@ -32,7 +32,7 @@ export default function DashboardOverlay({
     <Animated.View
       pointerEvents={viewMode === "dashboard" ? "auto" : "none"}
       style={[
-        StyleSheet.absoluteFillObject,
+        StyleSheet.absoluteFill,
         styles.dashOverlay,
         { opacity: dashOpacity, transform: [{ scale: dashScale }] },
       ]}
