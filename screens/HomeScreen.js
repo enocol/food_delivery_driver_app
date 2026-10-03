@@ -25,7 +25,7 @@ import * as Location from "expo-location";
 import { WebView } from "react-native-webview";
 import { useNavigation } from "@react-navigation/native";
 import { useOnlineStatus } from "../context/OnlineContext";
-import { playBreakingGlass } from "../utils/audio";
+import { playOnline, playOffline } from "../utils/audio";
 import { requestStatusChange } from "../utils/status";
 import { INITIAL_REGION } from "../constants/map";
 import { useBottomSheet } from "../hooks/useBottomSheet";
@@ -466,7 +466,6 @@ export default function HomeScreen() {
   // emits status_updated with { isOnline: true }.
   async function handleGoOnline() {
     setIsGoingOnline(true);
-    playBreakingGlass();
 
     if (viewMode === "dashboard") {
       setViewMode("map");
@@ -501,6 +500,7 @@ export default function HomeScreen() {
           setStatusLabel(s ?? "Online");
           setIsOnline(true);
           setIsGoingOnline(false);
+          playOnline();
           setTimeout(() => {
             mapRef.current?.animateToRegion(
               { ...onlineCoords, latitudeDelta: 0.002, longitudeDelta: 0.002 },
@@ -560,6 +560,7 @@ export default function HomeScreen() {
       emitEvent: "go_offline",
       expectOnline: false,
       onConfirm: () => {
+        playOffline();
         Animated.timing(mapCtrlAnim, {
           toValue: 0,
           duration: 300,

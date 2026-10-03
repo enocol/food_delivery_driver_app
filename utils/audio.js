@@ -1,19 +1,30 @@
 import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 
-const GLASS_SOUND = require("../assets/sounds/breaking-glass.mp3");
+const ONLINE_SOUND = require("../assets/sounds/online.wav");
+const OFFLINE_SOUND = require("../assets/sounds/offline.wav");
 
-export async function playBreakingGlass() {
+async function playSound(source) {
   try {
     await setAudioModeAsync({
       playsInSilentMode: true,
       interruptionMode: "mixWithOthers",
     });
-    const player = createAudioPlayer(GLASS_SOUND);
+    const player = createAudioPlayer(source);
     player.play();
     player.addListener("playbackStatusUpdate", (s) => {
       if (s.didJustFinish) player.remove();
     });
   } catch {
-    // sound failure never blocks going online
+    // sound failure never blocks the status change
   }
+}
+
+/** Confirmation chime played when the driver goes online. */
+export function playOnline() {
+  return playSound(ONLINE_SOUND);
+}
+
+/** Short note played when the driver goes offline. */
+export function playOffline() {
+  return playSound(OFFLINE_SOUND);
 }
