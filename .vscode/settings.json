@@ -1,0 +1,9 @@
+{
+  // The Expo Tools extension cannot statically evaluate some valid config
+  // plugins (e.g. @react-native-firebase/app and /auth), so it reports false
+  // "does not contain a valid config plugin / Unexpected token 'typeof'"
+  // warnings on app.json. The plugins are genuinely valid and are validated
+  // for real at build time (expo prebuild / eas build), so we disable the
+  // editor-only check here.
+  "expo.appManifest.pluginValidation": false
+}
