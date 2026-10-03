@@ -15,7 +15,6 @@ import HomeScreen from "./screens/HomeScreen";
 import EarningsScreen from "./screens/EarningsScreen";
 import InboxScreen from "./screens/InboxScreen";
 import ProfileScreen from "./screens/ProfileScreen";
-import DiscoverScreen from "./screens/DiscoverScreen";
 import AuthScreen from "./screens/AuthScreen";
 import { OnlineProvider } from "./context/OnlineContext";
 
@@ -52,15 +51,6 @@ function MainNavigator() {
             }}
           />
           <Tab.Screen
-            name="Discover"
-            component={DiscoverScreen}
-            options={{
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="compass-outline" size={size} color={color} />
-              ),
-            }}
-          />
-          <Tab.Screen
             name="Earnings"
             component={EarningsScreen}
             options={{
@@ -79,11 +69,11 @@ function MainNavigator() {
             }}
           />
           <Tab.Screen
-            name="Menu"
+            name="Profile"
             component={ProfileScreen}
             options={{
               tabBarIcon: ({ color, size }) => (
-                <Ionicons name="menu-outline" size={size} color={color} />
+                <Ionicons name="person-outline" size={size} color={color} />
               ),
             }}
           />

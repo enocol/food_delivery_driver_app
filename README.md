@@ -75,10 +75,9 @@ Deliver_driver_app/
 ├── screens/
 │   ├── AuthScreen.js             # Phone OTP login (React Native Firebase) + backend session sync
 │   ├── HomeScreen.js             # Persistent map with dashboard/map overlay modes
-│   ├── DiscoverScreen.js         # Opportunities (placeholder)
 │   ├── EarningsScreen.js         # Driver earnings (placeholder)
 │   ├── InboxScreen.js            # Notifications / messages (placeholder)
-│   └── ProfileScreen.js          # Driver profile + logout (shown as the "Menu" tab)
+│   └── ProfileScreen.js          # Driver profile + logout (shown as the "Profile" tab)
 ├── components/
 │   ├── ActionBar.js              # Persistent map-mode bottom bar + status line
 │   ├── DashboardOverlay.js       # Dark scrollable home surface
@@ -87,19 +86,20 @@ Deliver_driver_app/
 │   ├── MiniMapCard.js            # Non-interactive dashboard map preview
 │   └── SlidingSheet.js           # Map-mode sliding sheet (go offline, etc.)
 ├── utils/
-│   ├── audio.js                  # Breaking-glass sound playback (expo-audio)
+│   ├── audio.js                  # Go-online / go-offline sound playback (expo-audio)
 │   ├── orders.js                 # acceptDelivery REST call
 │   └── status.js                 # Server-gated online/offline transition helper
 └── assets/
     └── sounds/
-        └── breaking-glass.mp3    # Sound played when going online
+        ├── online.wav            # Chime played when going online
+        └── offline.wav           # Note played when going offline
 ```
 
 ---
 
 ## Screens
 
-The signed-in app uses a bottom tab navigator with five tabs: **Home**, **Discover**, **Earnings**, **Inbox**, and **Menu** (ProfileScreen).
+The signed-in app uses a bottom tab navigator with four tabs: **Home**, **Earnings**, **Inbox**, and **Profile** (ProfileScreen).
 
 ### AuthScreen
 
@@ -121,13 +121,13 @@ Responsibilities:
 - Listens for `new_delivery_available` and shows the delivery request modal.
 - On accept: confirms with the backend, then opens in-app Google Maps navigation (WebView) to the pickup, with a "Resume Nav" button while a trip is active.
 
-### DiscoverScreen / EarningsScreen / InboxScreen
+### EarningsScreen / InboxScreen
 
 Placeholder screens — ready for implementation.
 
 ### ProfileScreen
 
-Shown as the **Menu** tab. Currently exposes logout (`signOut`), which returns the user to AuthScreen.
+Shown as the **Profile** tab. Currently exposes logout (`signOut`), which returns the user to AuthScreen.
 
 ---
 
@@ -272,7 +272,7 @@ io(API_URL, {
 - **Persistent socket listeners** — `addSocketListener` / `removeSocketListener` register handlers in a registry that survives socket replacement on reconnect (`config/socket.js`).
 - **Socket reconnect on foreground** — `App.js` listens to `AppState` and reconnects with a fresh Firebase token whenever the app becomes active.
 - **Accept-delivery flow** — reverse-geocodes the pickup for a readable address, confirms the assignment with the backend, then opens in-app Google Maps directions in a WebView (`DeliveryRequestModal.js`, `utils/orders.js`, `HomeScreen.js`).
-- **Audio feedback** — breaking-glass sound plays when the driver goes online (`utils/audio.js`).
+- **Audio feedback** — a confirmation chime plays when the driver goes online and a short note when they go offline (`utils/audio.js`).
 
 ---
 
