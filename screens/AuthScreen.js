@@ -143,103 +143,105 @@ export default function AuthScreen() {
             resizeMode="contain"
           />
 
-          {/* ── Phone step ── */}
-          {step === "phone" && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Enter your phone number</Text>
-              <Text style={styles.cardSub}>
-                A verification code will be sent to your Cameroon number via
-                SMS.
-              </Text>
+          <View style={styles.body}>
+            {/* ── Phone step ── */}
+            {step === "phone" && (
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Enter your phone number</Text>
+                <Text style={styles.cardSub}>
+                  A verification code will be sent to your Cameroon number via
+                  SMS.
+                </Text>
 
-              <View style={styles.phoneRow}>
-                <View style={styles.prefixBox}>
-                  <Text style={styles.flag}>🇨🇲</Text>
-                  <Text style={styles.prefix}>+237</Text>
+                <View style={styles.phoneRow}>
+                  <View style={styles.prefixBox}>
+                    <Text style={styles.flag}>🇨🇲</Text>
+                    <Text style={styles.prefix}>+237</Text>
+                  </View>
+                  <TextInput
+                    style={styles.phoneInput}
+                    placeholder="6 XX XX XX XX"
+                    placeholderTextColor={colors.placeholder}
+                    keyboardType="phone-pad"
+                    maxLength={12}
+                    value={phoneNumber}
+                    onChangeText={(t) => {
+                      setError("");
+                      setPhoneNumber(t.replace(/[^\d\s]/g, ""));
+                    }}
+                    autoFocus
+                    returnKeyType="send"
+                    onSubmitEditing={handleSendCode}
+                  />
                 </View>
+
+                {!!error && <Text style={styles.errorText}>{error}</Text>}
+
+                {!!statusMsg && (
+                  <Text style={styles.statusText}>{statusMsg}</Text>
+                )}
+
+                <TouchableOpacity
+                  style={[styles.primaryBtn, loading && styles.btnDisabled]}
+                  onPress={handleSendCode}
+                  disabled={loading}
+                  activeOpacity={0.85}
+                >
+                  {loading ? (
+                    <ActivityIndicator color={colors.white} />
+                  ) : (
+                    <Text style={styles.primaryBtnText}>Send Code</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* ── OTP step ── */}
+            {step === "otp" && (
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Enter verification code</Text>
+                <Text style={styles.cardSub}>
+                  Code sent to{" "}
+                  <Text style={styles.boldText}>+237 {phoneNumber}</Text>
+                </Text>
+
                 <TextInput
-                  style={styles.phoneInput}
-                  placeholder="6 XX XX XX XX"
-                  placeholderTextColor={colors.placeholder}
-                  keyboardType="phone-pad"
-                  maxLength={12}
-                  value={phoneNumber}
+                  style={styles.otpInput}
+                  placeholder="• • • • • •"
+                  placeholderTextColor={colors.divider}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  value={otp}
                   onChangeText={(t) => {
                     setError("");
-                    setPhoneNumber(t.replace(/[^\d\s]/g, ""));
+                    setOtp(t.replace(/\D/g, ""));
                   }}
                   autoFocus
-                  returnKeyType="send"
-                  onSubmitEditing={handleSendCode}
+                  returnKeyType="done"
+                  onSubmitEditing={handleVerifyCode}
                 />
+
+                {!!error && <Text style={styles.errorText}>{error}</Text>}
+
+                <TouchableOpacity
+                  style={[styles.primaryBtn, loading && styles.btnDisabled]}
+                  onPress={handleVerifyCode}
+                  disabled={loading}
+                  activeOpacity={0.85}
+                >
+                  {loading ? (
+                    <ActivityIndicator color={colors.white} />
+                  ) : (
+                    <Text style={styles.primaryBtnText}>Verify Code</Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.backBtn} onPress={goBack}>
+                  <Text style={styles.backBtnText}>← Change number</Text>
+                </TouchableOpacity>
               </View>
-
-              {!!error && <Text style={styles.errorText}>{error}</Text>}
-
-              {!!statusMsg && (
-                <Text style={styles.statusText}>{statusMsg}</Text>
-              )}
-
-              <TouchableOpacity
-                style={[styles.primaryBtn, loading && styles.btnDisabled]}
-                onPress={handleSendCode}
-                disabled={loading}
-                activeOpacity={0.85}
-              >
-                {loading ? (
-                  <ActivityIndicator color={colors.white} />
-                ) : (
-                  <Text style={styles.primaryBtnText}>Send Code</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* ── OTP step ── */}
-          {step === "otp" && (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Enter verification code</Text>
-              <Text style={styles.cardSub}>
-                Code sent to{" "}
-                <Text style={styles.boldText}>+237 {phoneNumber}</Text>
-              </Text>
-
-              <TextInput
-                style={styles.otpInput}
-                placeholder="• • • • • •"
-                placeholderTextColor={colors.divider}
-                keyboardType="number-pad"
-                maxLength={6}
-                value={otp}
-                onChangeText={(t) => {
-                  setError("");
-                  setOtp(t.replace(/\D/g, ""));
-                }}
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={handleVerifyCode}
-              />
-
-              {!!error && <Text style={styles.errorText}>{error}</Text>}
-
-              <TouchableOpacity
-                style={[styles.primaryBtn, loading && styles.btnDisabled]}
-                onPress={handleVerifyCode}
-                disabled={loading}
-                activeOpacity={0.85}
-              >
-                {loading ? (
-                  <ActivityIndicator color={colors.white} />
-                ) : (
-                  <Text style={styles.primaryBtnText}>Verify Code</Text>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.backBtn} onPress={goBack}>
-                <Text style={styles.backBtnText}>← Change number</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+            )}
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -256,18 +258,21 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 40,
   },
 
   // ── Branding ─────────────────────────────────────────────
   authLogo: {
     width: "100%",
-    maxWidth: 320,
-    aspectRatio: 892 / 219,
     alignSelf: "center",
-    marginBottom: 32,
+    marginTop: 4,
+    zIndex: 0,
+  },
+  body: {
+    paddingHorizontal: 24,
+    paddingTop: 10,
+    paddingBottom: 40,
+    backgroundColor: colors.bgLightAlt,
+    marginTop: -50,
   },
 
   // ── Card ─────────────────────────────────────────────────
