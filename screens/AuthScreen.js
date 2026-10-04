@@ -263,6 +263,7 @@ const styles = StyleSheet.create({
   // ── Branding ─────────────────────────────────────────────
   authLogo: {
     width: "100%",
+    aspectRatio: 1,
     alignSelf: "center",
     marginTop: 4,
     zIndex: 0,
