@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   View,
   Text,
+  Image,
   TextInput,
   TouchableOpacity,
   StyleSheet,
@@ -15,6 +16,7 @@ import { signInWithPhoneNumber } from "@react-native-firebase/auth";
 import * as Location from "expo-location";
 import { auth } from "../config/firebase";
 import { API_URL } from "@env";
+import * as colors from "../utils/colors";
 
 export default function AuthScreen() {
   // Step: "phone" | "otp"
@@ -134,12 +136,12 @@ export default function AuthScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Logo / branding */}
-          <View style={styles.logoArea}>
-            <Text style={styles.logoEmoji}>🚗</Text>
-            <Text style={styles.appName}>Deliver Driver</Text>
-            <Text style={styles.tagline}>Sign in to start delivering</Text>
-          </View>
+          {/* Brand logo */}
+          <Image
+            source={require("../assets/auth-logo.png")}
+            style={styles.authLogo}
+            resizeMode="contain"
+          />
 
           {/* ── Phone step ── */}
           {step === "phone" && (
@@ -158,7 +160,7 @@ export default function AuthScreen() {
                 <TextInput
                   style={styles.phoneInput}
                   placeholder="6 XX XX XX XX"
-                  placeholderTextColor="#bbb"
+                  placeholderTextColor={colors.placeholder}
                   keyboardType="phone-pad"
                   maxLength={12}
                   value={phoneNumber}
@@ -185,7 +187,7 @@ export default function AuthScreen() {
                 activeOpacity={0.85}
               >
                 {loading ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={colors.white} />
                 ) : (
                   <Text style={styles.primaryBtnText}>Send Code</Text>
                 )}
@@ -205,7 +207,7 @@ export default function AuthScreen() {
               <TextInput
                 style={styles.otpInput}
                 placeholder="• • • • • •"
-                placeholderTextColor="#ccc"
+                placeholderTextColor={colors.divider}
                 keyboardType="number-pad"
                 maxLength={6}
                 value={otp}
@@ -227,7 +229,7 @@ export default function AuthScreen() {
                 activeOpacity={0.85}
               >
                 {loading ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={colors.white} />
                 ) : (
                   <Text style={styles.primaryBtnText}>Verify Code</Text>
                 )}
@@ -247,7 +249,7 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "#f4f5f9",
+    backgroundColor: colors.bgLightAlt,
   },
   flex: {
     flex: 1,
@@ -260,32 +262,20 @@ const styles = StyleSheet.create({
   },
 
   // ── Branding ─────────────────────────────────────────────
-  logoArea: {
-    alignItems: "center",
-    marginBottom: 36,
-  },
-  logoEmoji: {
-    fontSize: 56,
-    marginBottom: 10,
-  },
-  appName: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#1a1a1a",
-    letterSpacing: 0.3,
-  },
-  tagline: {
-    fontSize: 14,
-    color: "#888",
-    marginTop: 4,
+  authLogo: {
+    width: "100%",
+    maxWidth: 320,
+    aspectRatio: 892 / 219,
+    alignSelf: "center",
+    marginBottom: 32,
   },
 
   // ── Card ─────────────────────────────────────────────────
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.white,
     borderRadius: 18,
     padding: 24,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
     shadowRadius: 10,
@@ -294,18 +284,18 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1a1a1a",
+    color: colors.bg,
     marginBottom: 6,
   },
   cardSub: {
     fontSize: 13,
-    color: "#888",
+    color: colors.textDim,
     lineHeight: 19,
     marginBottom: 22,
   },
   boldText: {
     fontWeight: "700",
-    color: "#1a1a1a",
+    color: colors.bg,
   },
 
   // ── Phone input row ───────────────────────────────────────
@@ -313,11 +303,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1.5,
-    borderColor: "#e0e0e0",
+    borderColor: colors.borderLight,
     borderRadius: 12,
     overflow: "hidden",
     marginBottom: 16,
-    backgroundColor: "#fafafa",
+    backgroundColor: colors.bgLight,
   },
   prefixBox: {
     flexDirection: "row",
@@ -325,8 +315,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 15,
     borderRightWidth: 1.5,
-    borderRightColor: "#e0e0e0",
-    backgroundColor: "#f0f0f0",
+    borderRightColor: colors.borderLight,
+    backgroundColor: colors.surfaceAltLight,
     gap: 6,
   },
   flag: {
@@ -335,47 +325,47 @@ const styles = StyleSheet.create({
   prefix: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: colors.surface,
   },
   phoneInput: {
     flex: 1,
     fontSize: 18,
     paddingHorizontal: 14,
     paddingVertical: 15,
-    color: "#1a1a1a",
+    color: colors.bg,
     letterSpacing: 1.5,
   },
 
   // ── OTP input ─────────────────────────────────────────────
   otpInput: {
     borderWidth: 1.5,
-    borderColor: "#e0e0e0",
+    borderColor: colors.borderLight,
     borderRadius: 12,
     fontSize: 32,
     fontWeight: "700",
     letterSpacing: 18,
     textAlign: "center",
     paddingVertical: 18,
-    color: "#1a1a1a",
-    backgroundColor: "#fafafa",
+    color: colors.bg,
+    backgroundColor: colors.bgLight,
     marginBottom: 16,
   },
 
   // ── Shared ────────────────────────────────────────────────
   errorText: {
-    color: "#e53935",
+    color: colors.danger,
     fontSize: 13,
     marginBottom: 12,
     textAlign: "center",
   },
   statusText: {
-    color: "#1a73e8",
+    color: colors.primary,
     fontSize: 13,
     marginBottom: 12,
     textAlign: "center",
   },
   primaryBtn: {
-    backgroundColor: "#1a73e8",
+    backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
@@ -385,7 +375,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   primaryBtnText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "700",
     letterSpacing: 0.3,
@@ -395,7 +385,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   backBtnText: {
-    color: "#1a73e8",
+    color: colors.primary,
     fontSize: 14,
     fontWeight: "600",
   },
