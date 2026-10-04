@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import * as Location from "expo-location";
 import { acceptDelivery } from "../utils/orders";
+import * as colors from "../utils/colors";
 
 /**
  * DeliveryRequestModal — bottom sheet shown when a new delivery arrives.
@@ -176,7 +177,7 @@ export default function DeliveryRequestModal({
               disabled={isAccepting}
             >
               {isAccepting ? (
-                <ActivityIndicator color="#ffffff" />
+                <ActivityIndicator color={colors.white} />
               ) : (
                 <Text style={styles.btnText}>Accept</Text>
               )}
@@ -191,13 +192,13 @@ export default function DeliveryRequestModal({
 const styles = StyleSheet.create({
   sheetOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: colors.scrimSoft,
   },
   sheetBackdrop: {
     flex: 1,
   },
   panel: {
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 24,
@@ -214,18 +215,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f2f2f2",
+    backgroundColor: colors.surfaceAlt,
     zIndex: 2,
   },
   closeBtnText: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#1a1a1a",
+    color: colors.bg,
   },
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1a1a1a",
+    color: colors.bg,
     marginBottom: 20,
     textAlign: "center",
   },
@@ -239,17 +240,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#666666",
+    color: colors.textFaint,
     width: 100,
   },
   value: {
     flex: 1,
     fontSize: 14,
-    color: "#1a1a1a",
+    color: colors.bg,
     textAlign: "right",
   },
   fee: {
-    color: "#1a73e8",
+    color: colors.primary,
     fontWeight: "700",
     fontSize: 16,
   },
@@ -266,13 +267,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   btnDecline: {
-    backgroundColor: "#e53935",
+    backgroundColor: colors.danger,
   },
   btnAccept: {
-    backgroundColor: "#1a73e8",
+    backgroundColor: colors.primary,
   },
   btnText: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "700",
   },

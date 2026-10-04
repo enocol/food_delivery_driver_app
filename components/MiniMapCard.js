@@ -10,6 +10,7 @@ import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import NativeMap from "./NativeMap";
 import { Ionicons } from "@expo/vector-icons";
+import * as colors from "../utils/colors";
 
 export default function MiniMapCard({ mapRef, initialRegion, onExpand }) {
   return (
@@ -27,10 +28,10 @@ export default function MiniMapCard({ mapRef, initialRegion, onExpand }) {
         onPress={onExpand}
         activeOpacity={0.8}
       >
-        <Ionicons name="expand-outline" size={20} color="#ffffff" />
+        <Ionicons name="expand-outline" size={20} color={colors.white} />
       </TouchableOpacity>
       <TouchableOpacity style={styles.mapOverlayBtnRight} activeOpacity={0.8}>
-        <Ionicons name="search" size={20} color="#ffffff" />
+        <Ionicons name="search" size={20} color={colors.white} />
       </TouchableOpacity>
     </View>
   );
@@ -42,11 +43,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     marginBottom: 24,
-    backgroundColor: "#333333",
+    backgroundColor: colors.surface,
   },
   miniMapTint: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: "rgba(180, 100, 0, 0.15)",
+    backgroundColor: colors.primaryTint,
   },
   mapOverlayBtnLeft: {
     position: "absolute",
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.65)",
+    backgroundColor: colors.scrim,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.65)",
+    backgroundColor: colors.scrim,
     alignItems: "center",
     justifyContent: "center",
   },

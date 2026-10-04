@@ -39,10 +39,11 @@ import {
   addSocketListener,
   removeSocketListener,
 } from "../config/socket";
+import * as colors from "../utils/colors";
 
 const TAB_BAR_STYLE = {
-  backgroundColor: "#1a1a1a",
-  borderTopColor: "#2e2e2e",
+  backgroundColor: colors.bg,
+  borderTopColor: colors.border,
   borderTopWidth: 1,
 };
 
@@ -624,7 +625,7 @@ export default function HomeScreen() {
           onPress={handleHomePress}
           activeOpacity={0.8}
         >
-          <Ionicons name="home-outline" size={22} color="#ffffff" />
+          <Ionicons name="home-outline" size={22} color={colors.white} />
         </TouchableOpacity>
 
         <View style={styles.earningsPill}>
@@ -632,7 +633,7 @@ export default function HomeScreen() {
         </View>
 
         <TouchableOpacity style={styles.mapCircleBtn} activeOpacity={0.8}>
-          <Ionicons name="search" size={22} color="#ffffff" />
+          <Ionicons name="search" size={22} color={colors.white} />
         </TouchableOpacity>
       </Animated.View>
 
@@ -647,10 +648,10 @@ export default function HomeScreen() {
         ]}
       >
         <TouchableOpacity style={styles.floatingBtn} activeOpacity={0.8}>
-          <Ionicons name="shield-checkmark-outline" size={22} color="#4a90e2" />
+          <Ionicons name="shield-checkmark-outline" size={22} color={colors.primary} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.floatingBtn} activeOpacity={0.8}>
-          <Ionicons name="bar-chart-outline" size={22} color="#ffffff" />
+          <Ionicons name="bar-chart-outline" size={22} color={colors.white} />
         </TouchableOpacity>
       </Animated.View>
 
@@ -672,7 +673,7 @@ export default function HomeScreen() {
             activeOpacity={0.85}
           >
             {isGoingOnline ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={styles.goButtonText}>GO</Text>
             )}
@@ -699,7 +700,7 @@ export default function HomeScreen() {
             onPress={() => navigateToPickup(activeDelivery)}
             activeOpacity={0.9}
           >
-            <Ionicons name="navigate" size={18} color="#ffffff" />
+            <Ionicons name="navigate" size={18} color={colors.white} />
             <Text style={styles.resumeNavText}>Resume Nav</Text>
           </TouchableOpacity>
         </View>
@@ -796,7 +797,7 @@ export default function HomeScreen() {
             />
           ) : (
             <View style={styles.navLoadingWrap}>
-              <ActivityIndicator color="#1a73e8" size="large" />
+              <ActivityIndicator color={colors.primary} size="large" />
               <Text style={styles.navLoadingText}>Loading navigation…</Text>
             </View>
           )}
@@ -810,7 +811,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.bg,
   },
 
   // ── Top bar ───────────────────────────────────────────
@@ -829,28 +830,28 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.bg,
     alignItems: "center",
     justifyContent: "center",
     elevation: 6,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 4,
   },
   earningsPill: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.bg,
     paddingHorizontal: 22,
     paddingVertical: 12,
     borderRadius: 28,
     elevation: 6,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 4,
   },
   earningsText: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "700",
     letterSpacing: 0.3,
@@ -870,11 +871,11 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.bg,
     alignItems: "center",
     justifyContent: "center",
     elevation: 6,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.35,
     shadowRadius: 4,
@@ -892,17 +893,17 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#1a73e8",
+    backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
     elevation: 8,
-    shadowColor: "#1a73e8",
+    shadowColor: colors.accent,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.5,
     shadowRadius: 6,
   },
   goButtonText: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 22,
     fontWeight: "800",
     letterSpacing: 1,
@@ -918,18 +919,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#1a73e8",
+    backgroundColor: colors.accent,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 22,
     elevation: 7,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
     shadowRadius: 4,
   },
   resumeNavText: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 13,
     fontWeight: "700",
     letterSpacing: 0.2,
@@ -938,7 +939,7 @@ const styles = StyleSheet.create({
   // ── In-app navigation modal ─────────────────────────
   navModalContainer: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.white,
   },
   navHeader: {
     flexDirection: "row",
@@ -947,22 +948,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e5e5",
-    backgroundColor: "#ffffff",
+    borderBottomColor: colors.borderLighter,
+    backgroundColor: colors.white,
   },
   navTitle: {
     fontSize: 17,
     fontWeight: "700",
-    color: "#1a1a1a",
+    color: colors.bg,
   },
   navCloseBtn: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: colors.surfaceAltLight,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 10,
   },
   navCloseText: {
-    color: "#1a1a1a",
+    color: colors.bg,
     fontSize: 13,
     fontWeight: "700",
   },
@@ -976,7 +977,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   navLoadingText: {
-    color: "#444444",
+    color: colors.surfaceLight,
     fontSize: 14,
     fontWeight: "500",
   },

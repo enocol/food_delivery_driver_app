@@ -26,6 +26,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as colors from "../utils/colors";
 
 export default function ActionBar({
   viewMode,
@@ -54,7 +55,7 @@ export default function ActionBar({
     >
       <View style={styles.actionBarRow}>
         <TouchableOpacity style={styles.actionBarBtn} activeOpacity={0.7}>
-          <Ionicons name="options-outline" size={24} color="#ffffff" />
+          <Ionicons name="options-outline" size={24} color={colors.white} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -74,7 +75,7 @@ export default function ActionBar({
           activeOpacity={0.7}
           onPress={expandSheet}
         >
-          <Ionicons name="list-outline" size={24} color="#ffffff" />
+          <Ionicons name="list-outline" size={24} color={colors.white} />
         </TouchableOpacity>
       </View>
 
@@ -98,11 +99,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.bg,
     paddingHorizontal: 30,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#2e2e2e",
+    borderTopColor: colors.border,
     zIndex: 13,
   },
   actionBarRow: {
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   lineTrack: {
     height: 3,
     borderRadius: 2,
-    backgroundColor: "#2e2e2e",
+    backgroundColor: colors.border,
     overflow: "hidden",
     marginTop: 10,
     marginHorizontal: -30,
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     width: "20%",
     height: "100%",
     borderRadius: 2,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.white,
   },
   actionBarBtn: {
     width: 48,
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   statusText: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 17,
     fontWeight: "700",
   },

@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { signOut } from "@react-native-firebase/auth";
 import { auth } from "../config/firebase";
+import * as colors from "../utils/colors";
 
 export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
@@ -46,7 +47,7 @@ export default function ProfileScreen() {
         activeOpacity={0.8}
       >
         {loading ? (
-          <ActivityIndicator color="#e53935" />
+          <ActivityIndicator color={colors.danger} />
         ) : (
           <Text style={styles.logoutText}>Log out</Text>
         )}
@@ -58,26 +59,26 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
   },
   title: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#1a1a1a",
+    color: colors.bg,
     marginBottom: 40,
   },
   logoutBtn: {
     borderWidth: 1.5,
-    borderColor: "#e53935",
+    borderColor: colors.danger,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 48,
     alignItems: "center",
   },
   logoutText: {
-    color: "#e53935",
+    color: colors.danger,
     fontSize: 16,
     fontWeight: "600",
   },

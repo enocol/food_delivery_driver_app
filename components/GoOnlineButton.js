@@ -16,6 +16,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as colors from "../utils/colors";
 
 export default function GoOnlineButton({ onPress, loading, bottomInset = 0 }) {
   return (
@@ -29,13 +30,13 @@ export default function GoOnlineButton({ onPress, loading, bottomInset = 0 }) {
         activeOpacity={0.85}
       >
         {loading ? (
-          <ActivityIndicator color="#ffffff" />
+          <ActivityIndicator color={colors.white} />
         ) : (
           <>
             <Ionicons
               name="navigate-circle-outline"
               size={26}
-              color="#ffffff"
+              color={colors.white}
               style={{ marginRight: 10 }}
             />
             <Text style={styles.bigGoOnlineText}>Go online</Text>
@@ -54,24 +55,24 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 20,
     paddingTop: 8,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.bg,
   },
   bigGoOnlineBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#1a73e8",
+    backgroundColor: colors.accent,
     paddingVertical: 18,
     borderRadius: 50,
     marginTop: 4,
     elevation: 3,
-    shadowColor: "#1a73e8",
+    shadowColor: colors.accent,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 6,
   },
   bigGoOnlineText: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "700",
     letterSpacing: 0.2,

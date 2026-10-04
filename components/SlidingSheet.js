@@ -28,6 +28,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as colors from "../utils/colors";
 
 export default function SlidingSheet({
   viewMode,
@@ -63,7 +64,7 @@ export default function SlidingSheet({
           onPress={collapseSheet}
           activeOpacity={0.7}
         >
-          <Ionicons name="chevron-down" size={22} color="#ffffff" />
+          <Ionicons name="chevron-down" size={22} color={colors.white} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -79,7 +80,7 @@ export default function SlidingSheet({
           activeOpacity={0.7}
           onPress={collapseSheet}
         >
-          <Ionicons name="list-outline" size={22} color="#ffffff" />
+          <Ionicons name="list-outline" size={22} color={colors.white} />
         </TouchableOpacity>
       </View>
 
@@ -93,7 +94,7 @@ export default function SlidingSheet({
           <Ionicons
             name="bar-chart-outline"
             size={22}
-            color="#9e9e9e"
+            color={colors.textMuted}
             style={styles.sheetCardIcon}
           />
           <Text style={styles.sheetCardText}>See earnings trends</Text>
@@ -103,7 +104,7 @@ export default function SlidingSheet({
           <Ionicons
             name="star-outline"
             size={22}
-            color="#9e9e9e"
+            color={colors.textMuted}
             style={styles.sheetCardIcon}
           />
           <Text style={styles.sheetCardText}>See upcoming opportunities</Text>
@@ -120,7 +121,7 @@ export default function SlidingSheet({
       {/* Bottom row — options | hand-circle | search */}
       <View style={[styles.sheetActionRow, { paddingBottom: bottomInset + 8 }]}>
         <TouchableOpacity style={styles.actionBarBtn} activeOpacity={0.7}>
-          <Ionicons name="options-outline" size={24} color="#ffffff" />
+          <Ionicons name="options-outline" size={24} color={colors.white} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -136,12 +137,12 @@ export default function SlidingSheet({
             ]}
           >
             {isGoingOffline ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={colors.white} />
             ) : (
               <Ionicons
                 name="hand-left-outline"
                 size={30}
-                color={isOnline ? "#ffffff" : "#888888"}
+                color={isOnline ? colors.white : colors.textDim}
               />
             )}
           </View>
@@ -156,7 +157,7 @@ export default function SlidingSheet({
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.actionBarBtn} activeOpacity={0.7}>
-          <Ionicons name="search" size={24} color="#ffffff" />
+          <Ionicons name="search" size={24} color={colors.white} />
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -168,9 +169,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.bg,
     zIndex: 14,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -189,16 +190,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   sheetHeaderTitle: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 17,
     fontWeight: "700",
   },
   sheetDivider: {
     height: 1,
-    backgroundColor: "#2e2e2e",
+    backgroundColor: colors.border,
   },
   sheetSectionLabel: {
-    color: "#666666",
+    color: colors.textFaint,
     fontSize: 13,
     textAlign: "center",
     paddingVertical: 14,
@@ -207,9 +208,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#2e2e2e",
+    borderColor: colors.border,
     overflow: "hidden",
-    backgroundColor: "#0d0d0d",
+    backgroundColor: colors.bgDeep,
   },
   sheetCardRow: {
     flexDirection: "row",
@@ -221,19 +222,19 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   sheetCardText: {
-    color: "#9e9e9e",
+    color: colors.textMuted,
     fontSize: 16,
   },
   sheetCardInnerDivider: {
     height: 1,
-    backgroundColor: "#2e2e2e",
+    backgroundColor: colors.border,
   },
   waybillLink: {
     alignItems: "center",
     paddingVertical: 20,
   },
   waybillText: {
-    color: "#1a73e8",
+    color: colors.primary,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -261,12 +262,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   handCircleOffline: {
-    backgroundColor: "#2e2e2e",
+    backgroundColor: colors.border,
   },
   handCircleOnline: {
-    backgroundColor: "#c0392b",
+    backgroundColor: colors.dangerDark,
     borderWidth: 3,
-    borderColor: "#e53935",
+    borderColor: colors.danger,
   },
   handLabel: {
     fontSize: 11,
@@ -275,9 +276,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   handLabelOffline: {
-    color: "#666666",
+    color: colors.textFaint,
   },
   handLabelOnline: {
-    color: "#e53935",
+    color: colors.danger,
   },
 });

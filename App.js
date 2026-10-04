@@ -17,6 +17,7 @@ import InboxScreen from "./screens/InboxScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import AuthScreen from "./screens/AuthScreen";
 import { OnlineProvider } from "./context/OnlineContext";
+import * as colors from "./utils/colors";
 
 const Tab = createBottomTabNavigator();
 
@@ -29,12 +30,12 @@ function MainNavigator() {
           screenOptions={{
             headerShown: false,
             tabBarStyle: {
-              backgroundColor: "#1a1a1a",
-              borderTopColor: "#2e2e2e",
+              backgroundColor: colors.bg,
+              borderTopColor: colors.border,
               borderTopWidth: 1,
             },
-            tabBarActiveTintColor: "#ffffff",
-            tabBarInactiveTintColor: "#666666",
+            tabBarActiveTintColor: colors.white,
+            tabBarInactiveTintColor: colors.textFaint,
             tabBarLabelStyle: {
               fontSize: 11,
               fontWeight: "600",
@@ -123,10 +124,10 @@ export default function App() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#fff",
+          backgroundColor: colors.white,
         }}
       >
-        <ActivityIndicator size="large" color="#1a73e8" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
