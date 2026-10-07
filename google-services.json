@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "257059354170-4cb5ig3faghq7f04htekv05ml01o5i7n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mbolotechnologies.delivery_driver_app",
+            "certificate_hash": "dc07caa23a45ccfc060823cce106dd7e57ee23f3"
+          }
+        },
+        {
           "client_id": "257059354170-alc3f5282kaijv2cquhf2j8b5obpiqm2.apps.googleusercontent.com",
           "client_type": 3
         }
