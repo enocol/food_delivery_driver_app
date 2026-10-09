@@ -16,13 +16,12 @@ import {
   Animated,
   ActivityIndicator,
   Alert,
-  Modal,
+  Linking,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import NativeMap from "../components/NativeMap";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
-import { WebView } from "react-native-webview";
 import { useNavigation } from "@react-navigation/native";
 import { useOnlineStatus } from "../context/OnlineContext";
 import { playOnline, playOffline } from "../utils/audio";
@@ -104,8 +103,6 @@ export default function HomeScreen() {
   // Added: active accepted delivery used to gate location tracking.
   const [activeDelivery, setActiveDelivery] = useState(null);
   // Added: in-app navigation modal state and current route URL.
-  const [isNavVisible, setIsNavVisible] = useState(false);
-  const [navUrl, setNavUrl] = useState(null);
 
   // Added: refs for live-tracking subscriptions and throttling state.
   const locationSubRef = useRef(null);
@@ -204,29 +201,17 @@ export default function HomeScreen() {
       700,
     );
 
+    const destinationParam = encodeURIComponent(
+      `${destination.latitude},${destination.longitude}`,
+    );
+    // Omit origin so Google Maps navigates from the driver's live location.
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${destinationParam}&travelmode=driving`;
     try {
-      let originParam = "";
-      try {
-        const current = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-        originParam = `&origin=${encodeURIComponent(
-          `${current.coords.latitude},${current.coords.longitude}`,
-        )}`;
-      } catch {
-        // If current location isn't available, open route with destination only.
-      }
-
-      const destinationParam = encodeURIComponent(
-        `${destination.latitude},${destination.longitude}`,
-      );
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${destinationParam}${originParam}&travelmode=driving`;
-      setNavUrl(url);
-      setIsNavVisible(true);
+      await Linking.openURL(url);
     } catch {
       Alert.alert(
         "Navigation unavailable",
-        "Couldn't load in-app navigation right now.",
+        "Couldn't open Google Maps for navigation.",
       );
     }
   }
@@ -770,39 +755,6 @@ export default function HomeScreen() {
         onClose={() => setDeliveryRequest(null)}
       />
 
-      {/* ──────────────────────────────────────────────────
-          IN-APP NAVIGATION MODAL — route to pickup
-      ──────────────────────────────────────────────── */}
-      <Modal
-        visible={isNavVisible}
-        animationType="slide"
-        onRequestClose={() => setIsNavVisible(false)}
-      >
-        <View style={styles.navModalContainer}>
-          <View style={[styles.navHeader, { paddingTop: insets.top + 10 }]}>
-            <Text style={styles.navTitle}>Pickup Navigation</Text>
-            <TouchableOpacity
-              style={styles.navCloseBtn}
-              onPress={() => setIsNavVisible(false)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.navCloseText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-          {navUrl ? (
-            <WebView
-              source={{ uri: navUrl }}
-              style={styles.navWebView}
-              startInLoadingState
-            />
-          ) : (
-            <View style={styles.navLoadingWrap}>
-              <ActivityIndicator color={colors.primary} size="large" />
-              <Text style={styles.navLoadingText}>Loading navigation…</Text>
-            </View>
-          )}
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -936,49 +888,4 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
 
-  // ── In-app navigation modal ─────────────────────────
-  navModalContainer: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
-  navHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 14,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLighter,
-    backgroundColor: colors.white,
-  },
-  navTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: colors.bg,
-  },
-  navCloseBtn: {
-    backgroundColor: colors.surfaceAltLight,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  navCloseText: {
-    color: colors.bg,
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  navWebView: {
-    flex: 1,
-  },
-  navLoadingWrap: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-  },
-  navLoadingText: {
-    color: colors.surfaceLight,
-    fontSize: 14,
-    fontWeight: "500",
-  },
 });

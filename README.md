@@ -41,8 +41,7 @@ This is the **driver-facing** mobile app in a food delivery platform. It connect
 | Socket.io Client           | ^4.8.3   | Real-time server communication             |
 | expo-location              | ~57.0.20 | GPS, geocoding, live location tracking     |
 | expo-audio                 | ~57.0.5  | Sound playback                             |
-| expo-maps                  | ~57.0.3  | Native Apple Maps (iOS) and Google Maps (Android); alpha |
-| react-native-webview       | 13.16.1  | In-app navigation (Google Maps directions) |
+| expo-maps                  | ~57.0.4  | Native Apple Maps (iOS) and Google Maps (Android); alpha |
 | @expo/vector-icons         | ^15.0.2  | Ionicons UI icons                          |
 | react-native-safe-area-context | ~5.7.0 | Safe-area insets                         |
 | React Navigation           | ^7.0.0   | Bottom tab navigation                      |
@@ -119,7 +118,7 @@ Responsibilities:
 - **Go Offline** — reachable from the sliding sheet; emits `go_offline`, gated the same way.
 - Streams live location (`update_location`) while online.
 - Listens for `new_delivery_available` and shows the delivery request modal.
-- On accept: confirms with the backend, then opens in-app Google Maps navigation (WebView) to the pickup, with a "Resume Nav" button while a trip is active.
+- On accept: confirms with the backend, then opens the external Google Maps app for turn-by-turn navigation to the pickup, with a "Resume Nav" button while a trip is active.
 
 ### EarningsScreen / InboxScreen
 
@@ -271,7 +270,7 @@ io(API_URL, {
 - **Live location tracking** — while online, foreground GPS is streamed via `update_location`, throttled by a ~30 m movement threshold plus a 10 s heartbeat, with one-shot pickup/delivery arrival pings (`HomeScreen.js`).
 - **Persistent socket listeners** — `addSocketListener` / `removeSocketListener` register handlers in a registry that survives socket replacement on reconnect (`config/socket.js`).
 - **Socket reconnect on foreground** — `App.js` listens to `AppState` and reconnects with a fresh Firebase token whenever the app becomes active.
-- **Accept-delivery flow** — reverse-geocodes the pickup for a readable address, confirms the assignment with the backend, then opens in-app Google Maps directions in a WebView (`DeliveryRequestModal.js`, `utils/orders.js`, `HomeScreen.js`).
+- **Accept-delivery flow** — reverse-geocodes the pickup for a readable address, confirms the assignment with the backend, then deep-links to the external Google Maps app for navigation (`DeliveryRequestModal.js`, `utils/orders.js`, `HomeScreen.js`).
 - **Audio feedback** — a confirmation chime plays when the driver goes online and a short note when they go offline (`utils/audio.js`).
 
 ---
