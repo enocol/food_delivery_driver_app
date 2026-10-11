@@ -4,7 +4,7 @@
  * Props:
  *   mapRef        — ref forwarded to the inner MapView (used to animate region)
  *   initialRegion — initial map region
- *   onExpand      — called when the expand button is pressed
+ *   onExpand      — called when the card (or the expand button) is pressed
  */
 import React from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
@@ -14,7 +14,11 @@ import * as colors from "../utils/colors";
 
 export default function MiniMapCard({ mapRef, initialRegion, onExpand }) {
   return (
-    <View style={styles.miniMapContainer}>
+    <TouchableOpacity
+      style={styles.miniMapContainer}
+      onPress={onExpand}
+      activeOpacity={0.8}
+    >
       <NativeMap
         ref={mapRef}
         style={StyleSheet.absoluteFill}
@@ -33,7 +37,7 @@ export default function MiniMapCard({ mapRef, initialRegion, onExpand }) {
       <TouchableOpacity style={styles.mapOverlayBtnRight} activeOpacity={0.8}>
         <Ionicons name="search" size={20} color={colors.white} />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 }
 
