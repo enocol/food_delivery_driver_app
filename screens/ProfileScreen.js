@@ -12,6 +12,7 @@ import { signOut } from "@react-native-firebase/auth";
 import { auth } from "../config/firebase";
 import * as colors from "../utils/colors";
 import { saveOnline } from "../utils/onlineStorage";
+import { getSocket } from "../config/socket";
 
 export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
@@ -25,6 +26,11 @@ export default function ProfileScreen() {
         onPress: async () => {
           try {
             setLoading(true);
+            // Go offline before signing out so the socket disconnect that
+            // follows logout isn't treated as an unexpected drop (which would
+            // push a "you've gone offline" warning). Sent before the awaits
+            // below so it flushes well before the socket actually closes.
+            getSocket()?.emit("go_offline");
             // Clear the persisted online intent so logging out doesn't
             // auto-resume Online on the next login.
             await saveOnline(false);
