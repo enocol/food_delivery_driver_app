@@ -26,6 +26,7 @@ import {
 import { getCurrentOffer } from "./utils/orders";
 import { emitOffer } from "./utils/offerBridge";
 import { ensureDriverSession } from "./utils/driverSession";
+import { stopBackgroundLocation } from "./utils/locationTask";
 
 const Tab = createBottomTabNavigator();
 
@@ -113,6 +114,7 @@ export default function App() {
   useEffect(() => {
     if (!user) {
       disconnectSocket();
+      stopBackgroundLocation();
       return;
     }
     let cancelled = false;

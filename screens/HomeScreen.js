@@ -29,6 +29,10 @@ import { playOnline, playOffline } from "../utils/audio";
 import { requestStatusChange } from "../utils/status";
 import { getCurrentOffer, declineDelivery } from "../utils/orders";
 import { subscribeOffer } from "../utils/offerBridge";
+import {
+  startBackgroundLocation,
+  stopBackgroundLocation,
+} from "../utils/locationTask";
 import { INITIAL_REGION } from "../constants/map";
 import { useBottomSheet } from "../hooks/useBottomSheet";
 import { useScreenTransition } from "../hooks/useScreenTransition";
@@ -529,6 +533,26 @@ export default function HomeScreen() {
           setIsOnline(true);
           setIsGoingOnline(false);
           playOnline();
+          // Keep-alive needs "Allow all the time" location, which on Android 11+
+          // can't be granted from a dialog — only in Settings. If it's missing,
+          // explain why and offer a shortcut there.
+          startBackgroundLocation().then((result) => {
+            if (result === "no-background") {
+              Alert.alert(
+                "Stay online in the background",
+                'To keep receiving delivery requests while the app is in the ' +
+                  'background, set this app\'s location access to "Allow all ' +
+                  'the time" in Settings.',
+                [
+                  { text: "Not now", style: "cancel" },
+                  {
+                    text: "Open Settings",
+                    onPress: () => Linking.openSettings(),
+                  },
+                ],
+              );
+            }
+          });
           setTimeout(() => {
             mapRef.current?.animateToRegion(
               { ...onlineCoords, latitudeDelta: 0.002, longitudeDelta: 0.002 },
@@ -589,6 +613,7 @@ export default function HomeScreen() {
       expectOnline: false,
       onConfirm: () => {
         playOffline();
+        stopBackgroundLocation();
         Animated.timing(mapCtrlAnim, {
           toValue: 0,
           duration: 300,

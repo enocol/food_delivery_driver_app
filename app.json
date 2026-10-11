@@ -66,6 +66,16 @@
           "color": "#ff5a1f",
           "enableBackgroundRemoteNotifications": true
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Mbolo Delivery to use your location while you are delivering.",
+          "locationAlwaysAndWhenInUsePermission": "Allow Mbolo Delivery to keep you online and receive delivery requests in the background.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
       ]
     ],
     "extra": {

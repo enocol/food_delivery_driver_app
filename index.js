@@ -2,6 +2,9 @@ import { registerRootComponent } from 'expo';
 import * as Notifications from 'expo-notifications';
 
 import App from './App';
+// Registers the background location task (keep-alive) at startup, including when
+// the OS relaunches the app in the background for a location event.
+import './utils/locationTask';
 
 // Foreground presentation: always show a heads-up banner + sound (for every
 // notification, offers and otherwise) so a driver with the app open still
