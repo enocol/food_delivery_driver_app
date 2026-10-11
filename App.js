@@ -18,6 +18,14 @@ import ProfileScreen from "./screens/ProfileScreen";
 import AuthScreen from "./screens/AuthScreen";
 import { OnlineProvider } from "./context/OnlineContext";
 import * as colors from "./utils/colors";
+import * as Notifications from "expo-notifications";
+import {
+  startPushRegistration,
+  stopPushRegistration,
+} from "./utils/pushRegistration";
+import { getCurrentOffer } from "./utils/orders";
+import { emitOffer } from "./utils/offerBridge";
+import { ensureDriverSession } from "./utils/driverSession";
 
 const Tab = createBottomTabNavigator();
 
@@ -96,15 +104,25 @@ export default function App() {
     return unsubscribe;
   }, []);
 
-  // Connect socket on login; disconnect on logout.
-  // The socket fetches a fresh Firebase ID token itself on every
-  // (re)connection via its auth callback, so no token is passed here.
+  // Ensure the backend has a drivers row for this account, then connect the
+  // socket. The socket server rejects unknown drivers ("Driver account not
+  // found"), and that row is only created by /api/drivers/session — so we sync
+  // it here on every authenticated start (fresh or persisted login), before the
+  // handshake, rather than only on OTP verify. The socket still fetches its own
+  // fresh ID token on each (re)connection via its auth callback.
   useEffect(() => {
     if (!user) {
       disconnectSocket();
       return;
     }
-    connectSocket();
+    let cancelled = false;
+    (async () => {
+      await ensureDriverSession();
+      if (!cancelled) connectSocket();
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   // Reconnect when app comes back to foreground if the socket dropped.
@@ -114,6 +132,38 @@ export default function App() {
         connectSocket();
       }
     });
+    return () => sub.remove();
+  }, [user]);
+
+  // Register this device for delivery-offer push notifications while signed in.
+  useEffect(() => {
+    if (!user) {
+      stopPushRegistration();
+      return;
+    }
+    startPushRegistration();
+  }, [user]);
+
+  // Open the delivery request when the driver taps an offer notification
+  // (backgrounded or cold start). The modal lives in HomeScreen, so we fetch the
+  // current offer and hand it over via the offer bridge.
+  useEffect(() => {
+    if (!user) return;
+
+    async function handleOfferResponse(response) {
+      const data = response?.notification?.request?.content?.data;
+      if (data?.type !== "delivery_offered") return;
+      const offer = await getCurrentOffer();
+      if (offer) emitOffer(offer);
+    }
+
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) handleOfferResponse(response);
+    });
+
+    const sub = Notifications.addNotificationResponseReceivedListener(
+      handleOfferResponse,
+    );
     return () => sub.remove();
   }, [user]);
 

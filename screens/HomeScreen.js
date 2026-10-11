@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  AppState,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import NativeMap from "../components/NativeMap";
@@ -26,6 +27,8 @@ import { useNavigation } from "@react-navigation/native";
 import { useOnlineStatus } from "../context/OnlineContext";
 import { playOnline, playOffline } from "../utils/audio";
 import { requestStatusChange } from "../utils/status";
+import { getCurrentOffer, declineDelivery } from "../utils/orders";
+import { subscribeOffer } from "../utils/offerBridge";
 import { INITIAL_REGION } from "../constants/map";
 import { useBottomSheet } from "../hooks/useBottomSheet";
 import { useScreenTransition } from "../hooks/useScreenTransition";
@@ -387,13 +390,25 @@ export default function HomeScreen() {
     if (!isOnline) return;
 
     const onConnect = async () => {
+      // A bare socket (re)connect does NOT restore the driver's online state on
+      // the backend: status and socket_id are only written by go_online, and a
+      // background disconnect leaves the DB Offline with socket_id NULL. Since
+      // we still consider ourselves online here, re-assert go_online so the DB
+      // flips back to Online and repopulates socket_id (go_online also refreshes
+      // current_location, so this doubles as the fast location resync).
       try {
         const latest = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });
+        getSocket()?.emit("go_online", {
+          latitude: latest.coords.latitude,
+          longitude: latest.coords.longitude,
+        });
         maybeEmitMovementUpdate(latest, "reconnect");
       } catch {
-        // Ignore if location is unavailable during reconnect.
+        // Location unavailable — still re-assert online so the DB is corrected
+        // (go_online keeps the existing current_location when none is sent).
+        getSocket()?.emit("go_online", {});
       }
     };
 
@@ -418,8 +433,35 @@ export default function HomeScreen() {
         fee,
       });
     }
-    addSocketListener("new_delivery_available", onNewDelivery);
-    return () => removeSocketListener("new_delivery_available", onNewDelivery);
+    addSocketListener("delivery_offered", onNewDelivery);
+    return () => removeSocketListener("delivery_offered", onNewDelivery);
+  }, []);
+
+  // ── Offers via push tap + resync on foreground / mount ──
+  // A push tap (background/cold start) is handled in App.js, which fetches the
+  // current offer and hands it over through the offer bridge. We also resync on
+  // every foreground in case the one-time socket emit was missed.
+  useEffect(() => {
+    const unsubscribe = subscribeOffer((offer) => setDeliveryRequest(offer));
+
+    async function resync() {
+      try {
+        const offer = await getCurrentOffer();
+        if (offer) setDeliveryRequest(offer);
+      } catch {
+        // Ignore — the socket and the next foreground will catch up.
+      }
+    }
+    resync();
+
+    const sub = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") resync();
+    });
+
+    return () => {
+      unsubscribe();
+      sub.remove();
+    };
   }, []);
 
   // ── Center maps on mount ──────────────────────────────
@@ -751,8 +793,14 @@ export default function HomeScreen() {
           setDeliveryRequest(null);
           navigateToPickup(acceptedRequest);
         }}
-        onDecline={() => setDeliveryRequest(null)}
-        onClose={() => setDeliveryRequest(null)}
+        onDecline={() => {
+          if (deliveryRequest?.orderId) declineDelivery(deliveryRequest.orderId);
+          setDeliveryRequest(null);
+        }}
+        onClose={() => {
+          if (deliveryRequest?.orderId) declineDelivery(deliveryRequest.orderId);
+          setDeliveryRequest(null);
+        }}
       />
 
     </View>

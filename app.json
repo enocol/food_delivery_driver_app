@@ -25,7 +25,8 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -57,6 +58,13 @@
         {
           "requestLocationPermission": true,
           "locationPermission": "Allow Deliver Driver to show your position on the map."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#ff5a1f",
+          "enableBackgroundRemoteNotifications": true
         }
       ]
     ],

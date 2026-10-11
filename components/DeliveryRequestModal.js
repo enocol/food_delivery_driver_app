@@ -158,7 +158,7 @@ export default function DeliveryRequestModal({
           <View style={styles.row}>
             <Text style={styles.label}>Fee</Text>
             <Text style={[styles.value, styles.fee]}>
-              £{request?.fee?.toFixed(2)}
+              {request?.fee ?? 0} XAF
             </Text>
           </View>
           <View style={styles.actions}>
