@@ -3,14 +3,15 @@ import * as Notifications from 'expo-notifications';
 
 import App from './App';
 
-// Delivery offers in the foreground are shown via the in-app request modal
-// (delivered over the socket), so we suppress a duplicate system banner there.
-// Background / killed offers are displayed by the OS automatically.
+// Foreground presentation: always show a heads-up banner + sound (for every
+// notification, offers and otherwise) so a driver with the app open still
+// notices. For a delivery offer the in-app request modal (driven by the socket)
+// shows alongside it. Background / killed notifications are shown by the OS.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: false,
-    shouldShowList: false,
-    shouldPlaySound: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
     shouldSetBadge: false,
   }),
 });
