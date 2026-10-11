@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { signOut } from "@react-native-firebase/auth";
 import { auth } from "../config/firebase";
 import * as colors from "../utils/colors";
+import { saveOnline } from "../utils/onlineStorage";
 
 export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
@@ -24,6 +25,9 @@ export default function ProfileScreen() {
         onPress: async () => {
           try {
             setLoading(true);
+            // Clear the persisted online intent so logging out doesn't
+            // auto-resume Online on the next login.
+            await saveOnline(false);
             await signOut(auth);
             // onAuthStateChanged in App.js will switch back to AuthScreen
           } catch {

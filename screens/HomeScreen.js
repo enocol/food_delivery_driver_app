@@ -33,6 +33,7 @@ import {
   startBackgroundLocation,
   stopBackgroundLocation,
 } from "../utils/locationTask";
+import { saveOnline, loadOnline } from "../utils/onlineStorage";
 import { INITIAL_REGION } from "../constants/map";
 import { useBottomSheet } from "../hooks/useBottomSheet";
 import { useScreenTransition } from "../hooks/useScreenTransition";
@@ -417,8 +418,29 @@ export default function HomeScreen() {
     };
 
     addSocketListener("connect", onConnect);
+    // Restored online state (e.g. relaunch after a kill) can land after the
+    // socket already connected — re-assert immediately in that case.
+    if (getSocket()?.connected) onConnect();
     return () => removeSocketListener("connect", onConnect);
   }, [isOnline]);
+
+  // ── Resume online after a relaunch (e.g. killed/force-quit app) ──
+  // If the driver was online when the app was last killed, restore the Online UI
+  // and re-assert it. Setting isOnline true drives the usual online effects (the
+  // onConnect effect above re-emits go_online once the socket is up); keep-alive
+  // is restarted here. The backend's go_online handler then flips the DB back to
+  // Online and repopulates socket_id.
+  useEffect(() => {
+    (async () => {
+      const wasOnline = await loadOnline();
+      if (!wasOnline) return;
+      setStatusLabel("Online");
+      setIsOnline(true);
+      startBackgroundLocation();
+    })();
+    // Run once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Socket: delivery requests ─────────────────────────
   useEffect(() => {
@@ -532,6 +554,7 @@ export default function HomeScreen() {
           setStatusLabel(s ?? "Online");
           setIsOnline(true);
           setIsGoingOnline(false);
+          saveOnline(true);
           playOnline();
           // Keep-alive needs "Allow all the time" location, which on Android 11+
           // can't be granted from a dialog — only in Settings. If it's missing,
@@ -614,6 +637,7 @@ export default function HomeScreen() {
       onConfirm: () => {
         playOffline();
         stopBackgroundLocation();
+        saveOnline(false);
         Animated.timing(mapCtrlAnim, {
           toValue: 0,
           duration: 300,
