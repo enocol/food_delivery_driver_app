@@ -534,6 +534,31 @@ export default function HomeScreen() {
   // ── Go Online ─────────────────────────────────────────
   // Strictly gated: the driver only goes online after the server
   // emits status_updated with { isOnline: true }.
+  // ── Recenter the map on the driver's current location ──
+  async function recenterMap() {
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status !== "granted") {
+        const req = await Location.requestForegroundPermissionsAsync();
+        if (req.status !== "granted") return;
+      }
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      mapRef.current?.animateToRegion(
+        {
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        600,
+      );
+    } catch {
+      // Location unavailable — leave the map where it is.
+    }
+  }
+
   async function handleGoOnline() {
     setIsGoingOnline(true);
 
@@ -742,8 +767,12 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.floatingBtn} activeOpacity={0.8}>
           <Ionicons name="shield-checkmark-outline" size={22} color={colors.primary} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.floatingBtn} activeOpacity={0.8}>
-          <Ionicons name="bar-chart-outline" size={22} color={colors.white} />
+        <TouchableOpacity
+          style={styles.floatingBtn}
+          onPress={recenterMap}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="locate" size={22} color={colors.white} />
         </TouchableOpacity>
       </Animated.View>
 
