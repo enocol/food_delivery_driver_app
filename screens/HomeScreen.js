@@ -103,6 +103,7 @@ export default function HomeScreen() {
 
   const mapRef = useRef(null); // persistent full-screen map
   const dashMapRef = useRef(null); // mini-map card inside dashboard
+  const goPulse = useRef(new Animated.Value(0)).current; // "GO" button pulse
 
   const [viewMode, setViewMode] = useState("dashboard");
   const [isGoingOnline, setIsGoingOnline] = useState(false);
@@ -442,6 +443,21 @@ export default function HomeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── "GO" button pulse ──────────────────────────────────
+  // A white circle starts mid-radius and expands to the edge while fading out,
+  // looping continuously to draw the eye to the Go-Online button.
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(goPulse, {
+        toValue: 1,
+        duration: 1800,
+        useNativeDriver: true,
+      }),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [goPulse]);
+
   // ── Socket: delivery requests ─────────────────────────
   useEffect(() => {
     function onNewDelivery({
@@ -748,6 +764,26 @@ export default function HomeScreen() {
             disabled={isGoingOnline}
             activeOpacity={0.85}
           >
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.goPulse,
+                {
+                  opacity: goPulse.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.5, 0],
+                  }),
+                  transform: [
+                    {
+                      scale: goPulse.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.5, 1],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            />
             {isGoingOnline ? (
               <ActivityIndicator color={colors.white} />
             ) : (
@@ -956,6 +992,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "800",
     letterSpacing: 1,
+  },
+  goPulse: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.white,
   },
 
   // ── Resume navigation button ────────────────────────
